@@ -185,8 +185,12 @@ emgSignals=OnlinePreprocEMG([emgHistory;dd(:,1:nb_channels)],SR,B_H,A_H,B_L1,A_L
 emgHistory=dd(:,1:nb_channels);
 
 % feature extraction
+twFeatures=[];
 
-twFeatures=[rms(emgSignals),waveformlength(emgSignals),slopChanges(emgSignals,3)]./maxValues;
+for i=1:nb_channels
+    twFeatures=[twFeatures,[rms(emgSignals(:,i)),waveformlength(emgSignals(:,i)),slopChanges(emgSignals(:,i),3)]];
+end
+
 
 % filter goniometer data
 [angVel,filtGonio]=OnlinePreprocGonio([gonioHistory;dd(:,nb_channels+1)],SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength);
