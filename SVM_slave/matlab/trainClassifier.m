@@ -81,7 +81,13 @@ sbjData.grasp=organiseData([datapath nameOfUser '/MAT'],nbClasses,nbTrials,'emg'
 [SVMmodelallmotion,SVMmodelonlylast,maxValues]=trainSVMClassifierOn(Fd1,Fd2,Fd3,historyTW,classesSets,gama,C_param,1,muscleSets);
 
 
-%% variables for the online implementation
+%% save variables for the online implementation
 
 save(['trainedSVMSystem_' nameOfUser '.mat'],'SVMmodelallmotion','SVMmodelonlylast','maxValues','mvc','d1','d2','d3','sbjData','historyTW','velThreshold','muscleSets','div','nbClasses','classesSets')
+
+svm_savemodel(SVMmodelallmotion,'SVMmodelallmotion.model');
+svm_savemodel(SVMmodelonlylast,'SVMmodelonlylast.model');
+
+save('maxValues.mat','maxValues')
+save('mvc.mat','mvc')
 

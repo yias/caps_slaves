@@ -77,6 +77,7 @@ try
         bandPassCuttOffFreq=[50,400];
         
         % cut-off frequency of the low-pass filter for the EMG signals
+        
         lowPassCutOffFreq=20;
         
         % order of the filter
@@ -84,16 +85,16 @@ try
         
         % compute the transfer function coefficients for the EMG filtering
         
-        Wn=(bandPassCuttOffFreq(1)*2)./sr;
+        Wn=(bandPassCuttOffFreq(1)*2)/SR;
                 
         [B_H,A_H] = butter(filter_order,Wn,'high'); 
         
         
-        Wn=(bandPassCuttOffFreq(2)*2)./sr;
+        Wn=(bandPassCuttOffFreq(2)*2)/SR;
         
         [B_L1,A_L1] = butter(filter_order,Wn,'low'); 
         
-        Wn=(lowPassCutOffFreq*2)/sr;
+        Wn=(lowPassCutOffFreq*2)/SR;
         
         [B_L2,A_L2] = butter(filter_order,Wn); 
         
@@ -115,13 +116,13 @@ try
         
         % compute the transfer coefficients for the elbow joibt angle
         
-        Wn=(cutoff_LP*2)./SR;
+        Wn=(cutoff_LP*2)/SR;
 
         [B_elbowJoint,A_elbowJoint] = butter(order_LP,Wn,'low');
         
         % compute the transfer coefficients for the elbow joibt angle
         
-        Wn=(velLPCutOffFreq*2)./SR;
+        Wn=(velLPCutOffFreq*2)/SR;
 
         [B_elbowVel,A_elbowVel] = butter(order_LP,Wn,'low');        
         
@@ -139,10 +140,6 @@ try
 
         % a vector to contain the classification outcome of all the time windows
         allTWOutputs=[];
-
-        % the forget points for the esn
-        nForgetPoints=1;
-
 
         % number of channels
         nb_channels=12;
@@ -191,6 +188,7 @@ for i=1:nb_channels
     twFeatures=[twFeatures,[rms(emgSignals(:,i)),waveformlength(emgSignals(:,i)),slopChanges(emgSignals(:,i),3)]];
 end
 
+twFeatures=twFeatures./maxValues;
 
 % filter goniometer data
 [angVel,filtGonio]=OnlinePreprocGonio([gonioHistory;dd(:,nb_channels+1)],SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength);
@@ -202,9 +200,9 @@ gonioHistory=dd(:,nb_channels+1);
 % classify emg signals
 
 if typController==1
-    [timeWindowOutput, ~, ~] = svmpredict(0, twFeatures, SVMmodelallmotion, ' -q');
+    [timeWindowOutput, ~, ~] = svmpredict(1, twFeatures, SVMmodelallmotion, ' -q');
 else
-    [timeWindowOutput, ~, ~] = svmpredict(0, twFeatures, SVMmodelonlylast, ' -q');    
+    [timeWindowOutput, ~, ~] = svmpredict(1, twFeatures, SVMmodelonlylast, ' -q');    
 end
    
 disp(['tw output: ' num2str(timeWindowOutput)])
@@ -220,7 +218,7 @@ if counter>Least_TW
     CONFIDENCE=conf;
     TIMEWINDOW=timeWindowOutput;
     
-    if conf>MV_Conf_Threshold
+    if conf>=MV_Conf_Threshold
             tmpClass=zeros(1,8);
             tmpClass(1)=cclasses(winner);
             CLAS_OUT=tmpClass;

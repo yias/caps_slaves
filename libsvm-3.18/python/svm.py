@@ -16,8 +16,8 @@ except:
 # For unix the prefix 'lib' is not considered.
 	if find_library('svm'):
 		libsvm = CDLL(find_library('svm'))
-	elif find_library('libsvm'):
-		libsvm = CDLL(find_library('libsvm'))
+	elif find_library('libsvm-3.18'):
+		libsvm = CDLL(find_library('libsvm-3.18'))
 	else:
 		raise Exception('LIBSVM library not found.')
 
@@ -53,6 +53,7 @@ def gen_svm_nodearray(xi, feature_max=None, isKernel=None):
 		if not isKernel:
 			xi = [0] + xi  # idx should start from 1
 		index_range = range(len(xi))
+      
 	else:
 		raise TypeError('xi should be a dictionary, list or tuple')
 

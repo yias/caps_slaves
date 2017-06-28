@@ -627,9 +627,9 @@ Alldata_Labels=[Alldata1_Labels;Alldata2_Labels;Alldata3_Labels];
 
 
 
-SVMmodelalldata=svmtrain(Alldata_Labels,Alldata, ['-q -s 0 -t ' num2str(2) ' -g ' num2str(gama(best_gama)) ' -c ' num2str(C_param(best_C))]);
+SVMmodelalldata=svmtrain(Alldata_Labels,Alldata, ['-q -s 0 -t ' num2str(2) ' -g ' num2str(gama(best_gama)) ' -c ' num2str(C_param(best_C)) ' -b 1']);
 
-[TRianingResults, TrainingAccuracy, TrainingDecision] = svmpredict(Alldata_Labels, Alldata, SVMmodelalldata, ' -q');
+[TRianingResults, TrainingAccuracy, TrainingDecision] = svmpredict(Alldata_Labels, Alldata, SVMmodelalldata, ' -q -b 1');
 
 
 ClassesPerformances=struct([]);
@@ -759,13 +759,13 @@ end
 
 
 
-SVMmodelonlylast=svmtrain(Alldata3_Labels,Alldata3, ['-q -s 0 -t ' num2str(2) ' -g ' num2str(gama(best_gama)) ' -c ' num2str(C_param(best_C))]);
+SVMmodelonlylast=svmtrain(Alldata3_Labels,Alldata3, ['-q -s 0 -t ' num2str(2) ' -g ' num2str(gama(best_gama)) ' -c ' num2str(C_param(best_C)) ' -b 1']);
 
-[ValidResults1, ValidAccuracy1, ValidDecision1] = svmpredict(Alldata1_Labels, Alldata1, SVMmodelonlylast, ' -q');
+[ValidResults1, ValidAccuracy1, ValidDecision1] = svmpredict(Alldata1_Labels, Alldata1, SVMmodelonlylast, ' -q -b 1');
 
-[ValidResults2, ValidAccuracy2, ValidDecision2] = svmpredict(Alldata2_Labels, Alldata2, SVMmodelonlylast, ' -q');
+[ValidResults2, ValidAccuracy2, ValidDecision2] = svmpredict(Alldata2_Labels, Alldata2, SVMmodelonlylast, ' -q -b 1');
 
-[TRianingResults3, TrainingAccuracy3, TrainingDecision3] = svmpredict(Alldata3_Labels, Alldata3, SVMmodelonlylast, ' -q');
+[TRianingResults3, TrainingAccuracy3, TrainingDecision3] = svmpredict(Alldata3_Labels, Alldata3, SVMmodelonlylast, ' -q -b 1');
 
 disp('best performance:') 
 disp(['model : ' num2str(bestPerf)])

@@ -207,8 +207,9 @@ def svm_predict(y, x, m, options=""):
 	nr_class = m.get_nr_class()
 	pred_labels = []
 	pred_values = []
-
+	
 	if predict_probability:
+		
 		if not is_prob_model:
 			raise ValueError("Model does not support probabiliy estimates")
 
@@ -221,10 +222,12 @@ def svm_predict(y, x, m, options=""):
 		for xi in x:
 			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == PRECOMPUTED))
 			label = libsvm.svm_predict_probability(m, xi, prob_estimates)
+			print label
 			values = prob_estimates[:nr_class]
 			pred_labels += [label]
 			pred_values += [values]
 	else:
+		
 		if is_prob_model:
 			info("Model supports probability estimates, but disabled in predicton.")
 		if svm_type in (ONE_CLASS, EPSILON_SVR, NU_SVC):
@@ -241,7 +244,7 @@ def svm_predict(y, x, m, options=""):
 				values = dec_values[:nr_classifier]
 			pred_labels += [label]
 			pred_values += [values]
-
+	print pred_labels
 	ACC, MSE, SCC = evaluations(y, pred_labels)
 	l = len(y)
 	if svm_type in [EPSILON_SVR, NU_SVR]:
