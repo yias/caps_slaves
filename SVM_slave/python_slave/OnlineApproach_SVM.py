@@ -10,7 +10,7 @@ import scipy.io as sio
 import extra_functions
 
 import sys
-sys.path.append('./media/jason/data/MATLAB/CBM/libsvm-3.18/python')
+sys.path.append('./../libsvm-3.18/python')
 
 import svmutil
 
@@ -214,7 +214,7 @@ def run():
     
     twFeatures=np.array([np.sqrt(np.mean(emgSignals[:,0]**2)),extra_functions.waveformlength(emgSignals[:,0]),extra_functions.slopChanges(emgSignals[:,0],3)])
     
-    for i in range(1,nb_channels-1):
+    for i in range(1,nb_channels):
         twFeatures=np.concatenate((twFeatures,np.array([np.sqrt(np.mean(emgSignals[:,i]**2)),extra_functions.waveformlength(emgSignals[:,i]),extra_functions.slopChanges(emgSignals[:,i],3)])),axis=1)
     
     twFeatures=twFeatures/maxValues
