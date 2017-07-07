@@ -9,6 +9,8 @@ from scipy import signal
 import math
 import operator
 
+import matplotlib.pyplot as plt
+
 def OnlinePreprocEMG(data,sr,B_H,A_H,B_L1,A_L1,B_L2,A_L2,normaLize,rectiFy,mvc,twLength):
     
     # detrend
@@ -16,14 +18,12 @@ def OnlinePreprocEMG(data,sr,B_H,A_H,B_L1,A_L1,B_L2,A_L2,normaLize,rectiFy,mvc,t
     
     # band-pass filtering
     
-    #zi = signal.lfilter_zi(B_H,A_H)
-    
-    data_h=signal.lfilter(B_H,A_H,data_new)
+    data_h=signal.lfilter(B_H,A_H,data_new,axis=0)
     
     #zi = signal.lfilter_zi(B_L1,A_L1)
     
-    data_hl=signal.lfilter(B_L1,A_L1,data_h)
-    
+    data_hl=signal.lfilter(B_L1,A_L1,data_h,axis=0)
+        
     # rectification
     
     if rectiFy:
@@ -34,22 +34,23 @@ def OnlinePreprocEMG(data,sr,B_H,A_H,B_L1,A_L1,B_L2,A_L2,normaLize,rectiFy,mvc,t
     # low-pass filtering (for creating linear envelope)
 
     #zi = signal.lfilter_zi(B_L2,A_L2)
-    EMG_pp=signal.lfilter(B_L2,A_L2,data_rett)
+    EMG_pp=signal.lfilter(B_L2,A_L2,data_rett,axis=0)
     
     # normalization
     
     if normaLize:
-        for i in range(0,np.shape(EMG_pp)[2]):
+        for i in range(0,np.shape(EMG_pp)[1]):
             EMG_pp[:,i]=EMG_pp[:,i]/mvc[i]
 
-    return EMG_pp[np.floor(twLength*sr):,:]
+    
+    return EMG_pp[int(np.floor(twLength*sr)):,:]
 
 
-def OnlinePreprocGonio(signal,SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength):
+def OnlinePreprocGonio(ssignal,SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength):
     
     # filter singal
     
-    FTraj=signal.lfilter(B_elbowJoint,A_elbowJoint,signal)
+    FTraj=signal.lfilter(B_elbowJoint,A_elbowJoint,ssignal)
     
     # take the derivative of the signal
     
@@ -61,9 +62,9 @@ def OnlinePreprocGonio(signal,SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel
     
     # extract the data that correspond to the time window
     
-    FTraj=FTraj[np.floor(twLength*SR):]
+    FTraj=FTraj[int(np.floor(twLength*SR)):]
     
-    mean_Vel=np.mean(AVel[np.floor(twLength*SR):],dtype=np.float32)
+    mean_Vel=np.mean(AVel[int(np.floor(twLength*SR)):],dtype=np.float32)
     
     return mean_Vel, FTraj
 
@@ -83,33 +84,29 @@ def waveformlength(sequence):
 def slopChanges(sequence,e):
     
     count_slops=0
-    
-    for i in xrange(0,np.shape(sequence)-2*e+1,2*e):
+       
+    for i in xrange(0,np.shape(sequence)[0]-2*e,2*e):
         SubA=sequence[i+e]-sequence[i]
         SubB=sequence[i+e]-sequence[i+2*e]
-        if SubA>0 & SubB>0:
+        if (SubA>np.float64(0.0)) & (SubB>np.float64(0.0)):
             count_slops=count_slops+1
     
     return count_slops
 
 def majorityVote(Arr,nbClases):
-    
-    Uclasses=np.unique(Arr)    
-    
+
     arr=Arr.tolist()
     
     countersAp=np.zeros([nbClases],dtype=int)    
     
     for i in range(1,nbClases+1):
-        countersAp[i-1]=arr.count(i)
-    
-    index, value = max(enumerate(arr), key=operator.itemgetter(1))
-    
+        countersAp[i-1]=arr.count(i) 
+
     ab=np.sort(countersAp)
     
-    conf=ab[-1]-ab[int(len(countersAp))-2]/int(len(arr))
+    conf=float((ab[-1]-ab[nbClases-2]))/float(len(arr))
     
-    return index+1,conf
+    return countersAp.argmax()+1,conf
 
     
     

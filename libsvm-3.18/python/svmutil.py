@@ -244,7 +244,7 @@ def svm_predict(y, x, m, options=""):
 				values = dec_values[:nr_classifier]
 			pred_labels += [label]
 			pred_values += [values]
-	print pred_labels
+	
 	ACC, MSE, SCC = evaluations(y, pred_labels)
 	l = len(y)
 	if svm_type in [EPSILON_SVR, NU_SVR]:

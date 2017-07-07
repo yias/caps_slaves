@@ -20,7 +20,11 @@ addpath('C:\Users\ibatzianoulis\Documents\MATLAB\caps')
 
 % path to the folder of data
 
-datapath='/media/jason/data/MATLAB/CBM/data/';%'C:\CAPS\DEV\USERS\';
+% for ubuntu
+% datapath='/media/jason/data/MATLAB/CBM/data/';%'C:\CAPS\DEV\USERS\';
+
+% for windows
+datapath='data/';
 
 % the name of the user in CAPS
 
@@ -91,3 +95,4 @@ svm_savemodel(SVMmodelonlylast,'SVMmodelonlylast.model');
 save('maxValues.mat','maxValues')
 save('mvc.mat','mvc')
 
+    
