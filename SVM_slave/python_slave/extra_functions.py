@@ -47,26 +47,26 @@ def OnlinePreprocEMG(data,sr,B_H,A_H,B_L1,A_L1,B_L2,A_L2,normaLize,rectiFy,mvc,t
 
 
 def OnlinePreprocGonio(ssignal,SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength):
-    
+ 
     # filter singal
-    
-    FTraj=signal.lfilter(B_elbowJoint,A_elbowJoint,ssignal)
-    
+	
+	FTraj=signal.lfilter(B_elbowJoint,A_elbowJoint,ssignal)
+	
     # take the derivative of the signal
-    
-    dTraj=np.diff(FTraj)/(1/SR);
-    
+	tr=(1/SR)
+	dTraj=np.diff(FTraj)/tr
+	
     # filtering velocity
-    
-    AVel=signal.lfilter(B_elbowVel,A_elbowVel,dTraj)
-    
-    # extract the data that correspond to the time window
-    
-    FTraj=FTraj[int(np.floor(twLength*SR)):]
-    
-    mean_Vel=np.mean(AVel[int(np.floor(twLength*SR)):],dtype=np.float32)
-    
-    return mean_Vel, FTraj
+	
+	AVel=signal.lfilter(B_elbowVel,A_elbowVel,dTraj)
+	
+	# extract the data that correspond to the time window
+	
+	FTraj=FTraj[int(np.floor(twLength*SR)):]
+
+	mean_Vel=abs(np.mean(AVel[int(np.floor(twLength*SR)):],dtype=np.float32))
+	
+	return mean_Vel, FTraj
 
 
 
@@ -95,18 +95,17 @@ def slopChanges(sequence,e):
 
 def majorityVote(Arr,nbClases):
 
-    arr=Arr.tolist()
-    
-    countersAp=np.zeros([nbClases],dtype=int)    
-    
-    for i in range(1,nbClases+1):
-        countersAp[i-1]=arr.count(i) 
+	arr=Arr.tolist()
 
-    ab=np.sort(countersAp)
-    
-    conf=float((ab[-1]-ab[nbClases-2]))/float(len(arr))
-    
-    return countersAp.argmax()+1,conf
+	countersAp=np.zeros([nbClases],dtype=int)
+
+	for i in range(1,nbClases+1):
+		countersAp[i-1]=arr.count(i)
+
+	ab=np.sort(countersAp)
+	#conf=float((ab[-1]-ab[nbClases-2]))/float(len(arr))
+	conf=float(ab[-1])/float(len(arr))
+	return countersAp.argmax()+1,conf
 
     
     

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 
-@author: jason
+@author: 	Iason Batzianoulis (yias)
+email:		iason.batzianoulis@epfl.ch
+created: 	15/06/2017
+
 """
 
 import numpy as np
@@ -96,7 +99,7 @@ emgHistory=np.zeros([int(np.floor(SR*twLength)),nb_channels],dtype=np.float64)
 
 # time windows to take into account
 
-TWHistory=8
+TWHistory=15
 
 SVMmodelallmotion=None
 SVMmodelonlylast=None
@@ -105,6 +108,10 @@ mvc=None
 
 # PCE Variable that holds DC configurations
 CLAS_OUT = pce.get_var('CLAS_OUT').to_np_array()
+
+mVote=pce.get_var('PR_MV_ENABLE')
+mvClass=pce.get_var('MV_CLAS_OUT').to_np_array()
+fddof=pce.get_var('FDOF_ACT').to_np_array()
 
 
 def init():
@@ -193,7 +200,7 @@ def init():
 def run():
 	global B_H, A_H, B_L1, A_L1, B_L2, A_L2, B_elbowJoint, A_elbowJoint, B_elbowVel, A_elbowVel
 	global SVMmodelallmotion, SVMmodelonlylast, maxValues, mvc, CLAS_OUT, cclasses
-	global MV_Conf_Threshold, Least_TW, counter, allTWOutputs, nb_channels, gonioHistory, emgHistory, TWHistory
+	global MV_Conf_Threshold, Least_TW, counter, allTWOutputs, nb_channels, gonioHistory, emgHistory, TWHistory, mVote
 
 	"""
     
@@ -203,10 +210,13 @@ def run():
 
 	# acquire data
 	n_daq_data_tm=pce.get_var('DAQ_DATA')
+	#print n_daq_data_tm
 	np_daq_data=n_daq_data_tm.to_np_array()
-
+	#print np_daq_data
+	#mVote=pce.get_var('PR_MV_ENABLE')
+	#print "MV"
+	#print mVote
 	dd=np_daq_data.transpose()/float(math.pow(2,16)-1)*10-5
-
 
 	# filter emg signals
 
@@ -232,7 +242,7 @@ def run():
 
 	# filter goniometer data
 
-	angVel,filtGonio = extra_functions.OnlinePreprocGonio(np.concatenate((gonioHistory,dd[:,nb_channels]),axis=0),SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength)
+	angVel, filtGonio = extra_functions.OnlinePreprocGonio(np.concatenate((gonioHistory,dd[:,nb_channels]),axis=0),SR,B_elbowJoint,A_elbowJoint,B_elbowVel,A_elbowVel,twLength)
 
 	gonioHistory=dd[:,nb_channels]
 
@@ -243,19 +253,54 @@ def run():
 	else:
 		timeWindowOutput, p_acc, p_val = svmutil.svm_predict([1], [twFeatures.tolist()], SVMmodelonlylast, '-q')
 
-	print timeWindowOutput
+	#print timeWindowOutput
 	allTWOutputs=np.concatenate((allTWOutputs,timeWindowOutput),axis=0)
 
+	mvClass=pce.get_var('MV_CLAS_OUT')
+	fddof=pce.get_var('FDOF_ACT')
+	#print fddof
+	#print "old MVClass"
+	#print mvClass
 
-	if counter>Least_TW:		
+	if counter>Least_TW:	
+		#print allTWOutputs[np.size(allTWOutputs)-TWHistory:]
 		winner,conf= extra_functions.majorityVote(allTWOutputs[np.size(allTWOutputs)-TWHistory:],np.size(cclasses))
-		print winner
+		pce.set_var('MV_CONF',conf)
+		pce.set_var('MV_WINNER', winner)
+		print winner,conf
 		if conf>=MV_Conf_Threshold:
 			tmpClass=np.zeros([8,],dtype=int)
 			tmpClass[0]=cclasses[winner-1]
 			CLAS_OUT[0,0]=cclasses[winner-1]
-			print CLAS_OUT
+			#print CLAS_OUT
 			pce.set_var('CLAS_OUT',CLAS_OUT)
+			mvClass[0,0]=cclasses[winner-1]
+			pce.set_var('MV_CLAS_OUT',mvClass)
+			#print mvClass
+			#if winner==1:
+			#	fddof[0,0]=-50
+			#	fddof[0,1]=-50
+			#	pce.set_var('FDOF_ACT',fddof)
+			#if winner==2:
+			#	fddof[0,0]=-50
+			#	fddof[0,1]=-50
+			#	pce.set_var('FDOF_ACT',fddof)
+			#if winner==3:
+			#	fddof[0,0]=50
+			#	fddof[0,1]=50
+			#	pce.set_var('FDOF_ACT',fddof)
+			#if winner==4:
+			#	fddof[0,0]=50
+			#	fddof[0,1]=50
+			#	pce.set_var('FDOF_ACT',fddof)
+		else:
+			mvClass[0,0]=16
+			CLAS_OUT[0,0]=16
+			pce.set_var('CLAS_OUT',CLAS_OUT)
+			pce.set_var('MV_CLAS_OUT',mvClass)
+			#fddof[0,0]=0
+			#fddof[0,1]=0
+			#pce.set_var('FDOF_ACT',fddof)
 	counter=counter+1;
 
 
